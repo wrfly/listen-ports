@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	// "io"
 	"net"
 	"os"
 	"strconv"
@@ -13,24 +12,26 @@ func main() {
 		fmt.Println(os.Args[0], " <start port> <end port>")
 		os.Exit(1)
 	}
-
 	start := os.Args[1]
 	end := os.Args[2]
 
 	start_port, err := strconv.Atoi(start)
 	if err != nil {
-		fmt.Println(fmt.Sprintf("%s is not a number, check it and retry.", start))
-		os.Exit(1)
+		panic(err)
 	}
 
 	end_port, err := strconv.Atoi(end)
 	if err != nil {
-		fmt.Println(fmt.Sprintf("%s is not a number, check it and retry.", end))
-		os.Exit(1)
+		panic(err)
 	}
 
 	if end_port < start_port {
 		fmt.Println("Error! End port is smaller than Start port.")
+		os.Exit(1)
+	}
+
+	if end_port <= 0 || start_port <= 0 {
+		fmt.Println("Port must be positive.")
 		os.Exit(1)
 	}
 
@@ -48,10 +49,9 @@ func listen(i int) {
 	fmt.Println("Listen port:", port)
 	ln, err := net.Listen("tcp", ":"+port)
 	if err != nil {
-		fmt.Println("Error! ", err)
-		os.Exit(2)
+		panic(err)
 	}
-	l := func() {
+	go func() {
 		defer ln.Close()
 		for {
 			conn, err := ln.Accept()
@@ -62,6 +62,5 @@ func listen(i int) {
 				os.Exit(3)
 			}
 		}
-	}
-	go l()
+	}()
 }
